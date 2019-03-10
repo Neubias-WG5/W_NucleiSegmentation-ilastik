@@ -5,7 +5,7 @@
     "image": "neubiaswg5/w_nucleisegmentation-ilastik",
     "type": "singularity"
   },
-  "command-line": "python wrapper.py CYTOMINE_HOST CYTOMINE_PUBLIC_KEY CYTOMINE_PRIVATE_KEY CYTOMINE_ID_PROJECT CYTOMINE_ID_SOFTWARE",
+  "command-line": "python wrapper.py CYTOMINE_HOST CYTOMINE_PUBLIC_KEY CYTOMINE_PRIVATE_KEY CYTOMINE_ID_PROJECT CYTOMINE_ID_SOFTWARE PROBABILITY_THRESHOLD",
   "inputs": [
     {
       "id": "cytomine_host",
@@ -50,6 +50,17 @@
       "name": "Cytomine software ID",
       "set-by-server": true,
       "optional": false,
+      "type": "Number"
+    },
+    {
+      "id": "probability_threshold",
+      "value-key": "@ID",
+      "command-line-flag": "--@id",
+      "name": "Probability map threshold in range [0.0, 1.0]",
+      "description": "Probability map threshold in range [0.0, 1.0]",
+      "default-value": 0.9,
+      "set-by-server": false,
+      "optional": true,
       "type": "Number"
     }
   ],

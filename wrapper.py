@@ -1,5 +1,7 @@
 import sys
 import os
+import numpy as np
+from skimage import io
 from subprocess import call
 from cytomine.models import Job
 from neubiaswg5 import CLASS_OBJSEG
@@ -21,15 +23,27 @@ def main(argv):
         shArgs = [
             "/ilastik/run_ilastik.sh",
             "--headless",
-            "--project=PixelObjectClassification.ilp",
-            '--export_source="Object Predictions"',
+            #"--project=/app/PixelObjectClassification.ilp",
+            "--project=/app/PixelClassification.ilp",
+            #'--export_source="Object Predictions"',
+            "--export_source=Probabilities",
             "--output_format=tif",
-            '--output_filename_format='+os.path.join(outpath,'{nickname}.tif')
+            '--output_filename_format='+os.path.join(out_path,'{nickname}.tif')
             ]
-        for img in in_imgs:
-            shArgs.append("{}.tif".format(img.id))
+        shArgs += files
         
         call_return = call(" ".join(shArgs), shell=True, cwd='ilastik')
+
+        # Threshold probabilites
+        threshold = nj.parameters.probability_threshold
+        for image in in_imgs:
+            fn = os.path.join(out_path,"{}.tif".format(image.id))
+            img = io.imread(fn)
+            img = img[:,:,1]
+            img[img>=threshold] = 1.0
+            img[img<threshold] = 0.0
+            img = img.astype(np.uint8)
+            io.imsave(fn, img)
 
         # 3. Upload data to Cytomine
         upload_data(problem_cls, nj, in_imgs, out_path, **nj.flags, monitor_params={
