@@ -31,7 +31,7 @@ def main(argv):
             ]
         shArgs += [image.filepath for image in in_imgs]
         
-        call_return = call(" ".join(shArgs), shell=True, cwd='ilastik')
+        call_return = call(" ".join(shArgs), shell=True)
 
         # Threshold probabilites
         threshold = nj.parameters.probability_threshold
