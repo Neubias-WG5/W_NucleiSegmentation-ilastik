@@ -16,7 +16,6 @@ def main(argv):
         nj.job.update(status=Job.RUNNING, progress=0, statusComment="Initialisation...")
         # 1. Prepare data for workflow
         in_imgs, gt_imgs, in_path, gt_path, out_path, tmp_path = prepare_data(problem_cls, nj, is_2d=True, **nj.flags)
-        files = [os.path.join(in_path,"{}.tif".format(image.id)) for image in in_imgs]
 
         # 2. Run ilastik prediction
         nj.job.update(progress=25, statusComment="Launching workflow...")
@@ -30,14 +29,14 @@ def main(argv):
             "--output_format=tif",
             '--output_filename_format='+os.path.join(out_path,'{nickname}.tif')
             ]
-        shArgs += files
+        shArgs += [image.filepath for image in in_imgs]
         
         call_return = call(" ".join(shArgs), shell=True, cwd='ilastik')
 
         # Threshold probabilites
         threshold = nj.parameters.probability_threshold
         for image in in_imgs:
-            fn = os.path.join(out_path,"{}.tif".format(image.id))
+            fn = os.path.join(out_path,"{}".format(image.filename))
             img = io.imread(fn)
             img = img[:,:,1]
             img[img>=threshold] = 1.0
