@@ -1,12 +1,29 @@
 import sys
 import os
 import numpy as np
-from skimage import io
+from scipy import ndimage
+import skimage
 from subprocess import call
 from cytomine.models import Job
 from neubiaswg5 import CLASS_OBJSEG
 from neubiaswg5.helpers import NeubiasJob, prepare_data, upload_data, upload_metrics
 
+
+def label_objects(img, threshold=0.9, min_radius=2):
+    """
+    Threshold ilastik probability map and convert binary data to objects
+    """
+    img = img[:,:,1]
+    img[img>=threshold] = 1.0
+    img[img<threshold] = 0.0
+    dimg = ndimage.morphology.distance_transform_edt(img)
+    idimg = -1.0*dimg + dimg.max()
+    h_max = skimage.morphology.h_maxima(dimg, min_radius, skimage.morphology.disk(min_radius)).astype(np.uint16)
+    markers,num_objects = ndimage.label(h_max)
+    wimg = skimage.morphology.watershed(idimg, markers, mask=img)
+    img = wimg.astype(np.uint16)
+    
+    return img
 
 def main(argv):
     base_path = "{}".format(os.getenv("HOME")) # Mandatory for Singularity
@@ -27,22 +44,19 @@ def main(argv):
             #'--export_source="Object Predictions"',
             "--export_source=Probabilities",
             "--output_format=tif",
-            '--output_filename_format='+os.path.join(out_path,'{nickname}.tif')
+            '--output_filename_format='+os.path.join(tmp_path,'{nickname}.tif')
             ]
         shArgs += [image.filepath for image in in_imgs]
         
         call_return = call(" ".join(shArgs), shell=True)
 
         # Threshold probabilites
-        threshold = nj.parameters.probability_threshold
         for image in in_imgs:
-            fn = os.path.join(out_path,"{}".format(image.filename))
-            img = io.imread(fn)
-            img = img[:,:,1]
-            img[img>=threshold] = 1.0
-            img[img<threshold] = 0.0
-            img = img.astype(np.uint8)
-            io.imsave(fn, img)
+            fn = os.path.join(tmp_path,"{}".format(image.filename))
+            outfn = os.path.join(out_path,"{}".format(image.filename))
+            img = skimage.io.imread(fn)
+            img = label_objects(img, nj.parameters.probability_threshold, nj.parameters.min_radius)
+            skimage.io.imsave(outfn, img)
 
         # 3. Upload data to Cytomine
         upload_data(problem_cls, nj, in_imgs, out_path, **nj.flags, monitor_params={

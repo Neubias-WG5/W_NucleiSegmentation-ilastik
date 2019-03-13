@@ -1,11 +1,11 @@
 {
   "name": "NucleiSegmentation-ilastik",
-  "description": "Workflow for nuclei segmentation using ilastik 1.3.2",
+  "description": "Workflow for nuclei segmentation using ilastik 1.3.2 and Python post-processing",
   "container-image": {
     "image": "neubiaswg5/w_nucleisegmentation-ilastik",
     "type": "singularity"
   },
-  "command-line": "python wrapper.py CYTOMINE_HOST CYTOMINE_PUBLIC_KEY CYTOMINE_PRIVATE_KEY CYTOMINE_ID_PROJECT CYTOMINE_ID_SOFTWARE PROBABILITY_THRESHOLD",
+  "command-line": "python wrapper.py CYTOMINE_HOST CYTOMINE_PUBLIC_KEY CYTOMINE_PRIVATE_KEY CYTOMINE_ID_PROJECT CYTOMINE_ID_SOFTWARE PROBABILITY_THRESHOLD MIN_RADIUS",
   "inputs": [
     {
       "id": "cytomine_host",
@@ -59,6 +59,17 @@
       "name": "Probability map threshold in range [0.0, 1.0]",
       "description": "Probability map threshold in range [0.0, 1.0]",
       "default-value": 0.9,
+      "set-by-server": false,
+      "optional": true,
+      "type": "Number"
+    },
+    {
+      "id": "min_radius",
+      "value-key": "@ID",
+      "command-line-flag": "--@id",
+      "name": "Minimum radius of nuclei",
+      "description": "Minimum radius of nuclei",
+      "default-value": 2.0,
       "set-by-server": false,
       "optional": true,
       "type": "Number"
