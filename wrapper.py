@@ -34,14 +34,18 @@ def main(argv):
         # 1. Prepare data for workflow
         in_imgs, gt_imgs, in_path, gt_path, out_path, tmp_path = prepare_data(problem_cls, nj, is_2d=True, **nj.flags)
 
+        temp_img = skimage.io.imread(os.path.join(in_path,"{}".format(in_imgs[0].filename)))
+        if len(temp_img.shape) > 2:
+            classification_project = "/app/RGBPixelClassification.ilp"
+        else:
+            classification_project = "/app/PixelClassification.ilp"
+
         # 2. Run ilastik prediction
         nj.job.update(progress=25, statusComment="Launching workflow...")
         shArgs = [
             "/ilastik/run_ilastik.sh",
             "--headless",
-            #"--project=/app/PixelObjectClassification.ilp",
-            "--project=/app/PixelClassification.ilp",
-            #'--export_source="Object Predictions"',
+            "--project="+classification_project,
             "--export_source=Probabilities",
             "--output_format=tif",
             '--output_filename_format='+os.path.join(tmp_path,'{nickname}.tif')
