@@ -9,6 +9,7 @@ RUN tar xjf ilastik-1.3.2-Linux.tar.bz2
 RUN mv ilastik-1.3.2-Linux ilastik
 
 ADD PixelClassification.ilp /app/PixelClassification.ilp
+ADD RGBPixelClassification.ilp /app/RGBPixelClassification.ilp
 
 ADD wrapper.py /app/wrapper.py
 
