@@ -58,7 +58,7 @@
       "command-line-flag": "--@id",
       "name": "Probability map threshold in range [0.0, 1.0]",
       "description": "Probability map threshold in range [0.0, 1.0]",
-      "default-value": 0.9,
+      "default-value": 0.8,
       "set-by-server": false,
       "optional": true,
       "type": "Number"
@@ -69,7 +69,7 @@
       "command-line-flag": "--@id",
       "name": "Minimum radius of nuclei",
       "description": "Minimum radius of nuclei",
-      "default-value": 2.0,
+      "default-value": 5.0,
       "set-by-server": false,
       "optional": true,
       "type": "Number"

@@ -3,22 +3,25 @@ import os
 import numpy as np
 from scipy import ndimage
 import skimage
+import skimage.morphology
 from subprocess import call
 from cytomine.models import Job
 from neubiaswg5 import CLASS_OBJSEG
 from neubiaswg5.helpers import NeubiasJob, prepare_data, upload_data, upload_metrics
 
 
-def label_objects(img, threshold=0.9, min_radius=2):
+def label_objects(img, threshold=0.8, min_radius=5):
     """
     Threshold ilastik probability map and convert binary data to objects
     """
     img = img[:,:,1]
     img[img>=threshold] = 1.0
     img[img<threshold] = 0.0
+    selem = skimage.morphology.disk(min_radius)
+    img = ndimage.morphology.binary_closing(img, structure=selem).astype(np.int)
     dimg = ndimage.morphology.distance_transform_edt(img)
     idimg = -1.0*dimg + dimg.max()
-    h_max = skimage.morphology.h_maxima(dimg, min_radius, skimage.morphology.disk(min_radius)).astype(np.uint16)
+    h_max = skimage.morphology.h_maxima(dimg, min_radius, selem).astype(np.uint16)
     markers,num_objects = ndimage.label(h_max)
     wimg = skimage.morphology.watershed(idimg, markers, mask=img)
     img = wimg.astype(np.uint16)
