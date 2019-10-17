@@ -35,7 +35,7 @@ def main(argv):
     with NeubiasJob.from_cli(argv) as nj:
         nj.job.update(status=Job.RUNNING, progress=0, statusComment="Initialisation...")
         # 1. Prepare data for workflow
-        in_imgs, gt_imgs, in_path, gt_path, out_path, tmp_path = prepare_data(problem_cls, nj, is_2d=True, **nj.flags)
+        in_imgs, gt_imgs, in_path, gt_path, out_path, tmp_path = prepare_data(problem_cls, nj, **nj.flags)
 
         temp_img = skimage.io.imread(os.path.join(in_path,"{}".format(in_imgs[0].filename)))
         if len(temp_img.shape) > 2:
@@ -46,7 +46,7 @@ def main(argv):
         # 2. Run ilastik prediction
         nj.job.update(progress=25, statusComment="Launching workflow...")
         shArgs = [
-            "/ilastik/run_ilastik.sh",
+            "/app/ilastik/run_ilastik.sh",
             "--headless",
             "--project="+classification_project,
             "--export_source=Probabilities",

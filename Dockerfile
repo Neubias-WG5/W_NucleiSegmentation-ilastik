@@ -6,12 +6,11 @@ RUN git clone https://github.com/cytomine-uliege/Cytomine-python-client.git && \
     cd /Cytomine-python-client && git checkout tags/v2.3.0.poc.1 && pip install . && \
     rm -r /Cytomine-python-client
 
-
 # ---------------------------------------------------------------------------------------------------------------------
 # Install Neubias-W5-Utilities (annotation exporter, compute metrics, helpers,...)
 RUN apt-get update && apt-get install libgeos-dev -y && apt-get clean
 RUN git clone https://github.com/Neubias-WG5/neubiaswg5-utilities.git && \
-    cd /neubiaswg5-utilities/ && git checkout tags/v0.7.0 && pip install .
+    cd /neubiaswg5-utilities/ && git checkout tags/v0.8.0 && pip install .
 
 # install utilities binaries
 RUN chmod +x /neubiaswg5-utilities/bin/*
@@ -23,8 +22,11 @@ RUN rm -r /neubiaswg5-utilities
 # ---------------------------------------------------------------------------------------------------------------------
 # Install ilastik
 RUN wget http://files.ilastik.org/ilastik-1.3.2-Linux.tar.bz2
-RUN tar -xjvf ilastik-1.3.2-Linux.tar.bz2
-RUN mv ilastik-1.3.2-Linux ilastik
+RUN apt-get update && apt-get install -y --no-install-recommends bsdtar
+RUN mkdir /app && mkdir /app/ilastik
+RUN bsdtar -xjvf ilastik-1.3.2-Linux.tar.bz2 && \
+    mv /ilastik-1.3.2-Linux/* /app/ilastik/ && \
+    rm /ilastik-1.3.2-Linux.tar.bz2 /ilastik-1.3.2-Linux -r
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Install workflow
