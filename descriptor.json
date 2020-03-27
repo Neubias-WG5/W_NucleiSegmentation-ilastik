@@ -5,7 +5,7 @@
     "image": "neubiaswg5/w_nucleisegmentation-ilastik",
     "type": "singularity"
   },
-  "command-line": "python wrapper.py CYTOMINE_HOST CYTOMINE_PUBLIC_KEY CYTOMINE_PRIVATE_KEY CYTOMINE_ID_PROJECT CYTOMINE_ID_SOFTWARE PROBABILITY_THRESHOLD MIN_RADIUS",
+  "command-line": "python wrapper.py CYTOMINE_HOST CYTOMINE_PUBLIC_KEY CYTOMINE_PRIVATE_KEY CYTOMINE_ID_PROJECT CYTOMINE_ID_SOFTWARE PROBABILITY_THRESHOLD MIN_SIZE",
   "inputs": [
     {
       "id": "cytomine_host",
@@ -64,12 +64,12 @@
       "type": "Number"
     },
     {
-      "id": "min_radius",
+      "id": "min_size",
       "value-key": "@ID",
       "command-line-flag": "--@id",
-      "name": "Minimum radius of nuclei",
-      "description": "Minimum radius of nuclei",
-      "default-value": 3.0,
+      "name": "Minimum nuclei size",
+      "description": "Minimum nuclei size",
+      "default-value": 25,
       "set-by-server": false,
       "optional": true,
       "type": "Number"

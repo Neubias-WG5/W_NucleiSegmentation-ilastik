@@ -3,25 +3,47 @@ import os
 import numpy as np
 from scipy import ndimage
 import skimage
+import skimage.io
+import skimage.feature
 import skimage.morphology
-import skimage.measure
+import skimage.filters
+import skimage.color
+import skimage.segmentation
 from subprocess import call
 from cytomine.models import Job
 from neubiaswg5 import CLASS_OBJSEG
 from neubiaswg5.helpers import NeubiasJob, prepare_data, upload_data, upload_metrics
 
 
-def label_objects(img, threshold=0.9, min_radius=3):
+def label_objects(img, threshold=0.9, min_size=25):
     """
     Threshold ilastik probability map and convert binary data to objects
     """
+    # Do fill holes, watershed, remove small objects
+    # Or watershed to probability map, threshold, remove small objects
     img = img[:,:,1]
     img[img>=threshold] = 1.0
     img[img<threshold] = 0.0
-    img = skimage.measure.label(img).astype(np.uint16)
-    img = skimage.morphology.remove_small_objects(img, int(3*min_radius*min_radius))
+    img = skimage.morphology.remove_small_holes(img.astype(np.bool), min_size)
+    distance = ndimage.distance_transform_edt(img)
+    distance = skimage.filters.gaussian(distance, sigma=3)
+    local_maxi = skimage.feature.peak_local_max(distance, indices=False, footprint=np.ones((3, 3)), labels=img)
+    markers = skimage.morphology.label(local_maxi)
+    labelimg = skimage.morphology.watershed(-distance, markers, mask=img)
+    labelimg = labelimg.astype(np.uint16)
+    labelimg = skimage.morphology.remove_small_objects(labelimg, min_size)
+    labelimg = skimage.segmentation.relabel_sequential(labelimg)[0].astype(np.uint16)
     
-    return img
+    return labelimg
+
+def convert2rgb(in_imgs):
+    """
+    Convert grayscale images in a path to rgb
+    """
+    for image in in_imgs:
+        img = skimage.io.imread(image.filepath)
+        img = skimage.color.gray2rgb(img)
+        skimage.io.imsave(image.filepath, img)
 
 def main(argv):
     base_path = "{}".format(os.getenv("HOME")) # Mandatory for Singularity
@@ -36,7 +58,8 @@ def main(argv):
         if len(temp_img.shape) > 2:
             classification_project = "/app/RGBPixelClassification.ilp"
         else:
-            classification_project = "/app/PixelClassification.ilp"
+            classification_project = "/app/RGBPixelClassification.ilp"
+            convert2rgb(in_imgs)
 
         # 2. Run ilastik prediction
         nj.job.update(progress=25, statusComment="Launching workflow...")
@@ -57,7 +80,7 @@ def main(argv):
             fn = os.path.join(tmp_path,"{}".format(image.filename))
             outfn = os.path.join(out_path,"{}".format(image.filename))
             img = skimage.io.imread(fn)
-            img = label_objects(img, nj.parameters.probability_threshold, nj.parameters.min_radius)
+            img = label_objects(img, nj.parameters.probability_threshold, nj.parameters.min_size)
             skimage.io.imsave(outfn, img)
 
         # 3. Upload data to Cytomine

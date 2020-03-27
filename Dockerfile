@@ -30,8 +30,7 @@ RUN bsdtar -xjvf ilastik-1.3.2-Linux.tar.bz2 && \
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Install workflow
-ADD PixelClassification.ilp /app/PixelClassification.ilp
-ADD RGBPixelClassification.ilp /app/RGBPixelClassification.ilp
+RUN wget -O /app/RGBPixelClassification.ilp https://biaflows.neubias.org/workflow-files/ilastik_weights.ilp
 
 ADD wrapper.py /app/wrapper.py
 
