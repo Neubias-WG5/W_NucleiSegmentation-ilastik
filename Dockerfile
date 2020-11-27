@@ -1,23 +1,23 @@
-FROM python:3.6.9-stretch
+FROM python:3.7-stretch
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Install Cytomine python client
 RUN git clone https://github.com/cytomine-uliege/Cytomine-python-client.git && \
-    cd /Cytomine-python-client && git checkout tags/v2.3.0.poc.1 && pip install . && \
+    cd /Cytomine-python-client && git checkout tags/v2.7.3 && pip install . && \
     rm -r /Cytomine-python-client
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Install Neubias-W5-Utilities (annotation exporter, compute metrics, helpers,...)
 RUN apt-get update && apt-get install libgeos-dev -y && apt-get clean
-RUN git clone https://github.com/Neubias-WG5/neubiaswg5-utilities.git && \
-    cd /neubiaswg5-utilities/ && git checkout tags/v0.8.8 && pip install .
+RUN git clone https://github.com/Neubias-WG5/biaflows-utilities.git && \
+    cd /biaflows-utilities/ && git checkout tags/v0.9.1 && pip install .
 
 # install utilities binaries
-RUN chmod +x /neubiaswg5-utilities/bin/*
-RUN cp /neubiaswg5-utilities/bin/* /usr/bin/
+RUN chmod +x /biaflows-utilities/bin/*
+RUN cp /biaflows-utilities/bin/* /usr/bin/
 
 # cleaning
-RUN rm -r /neubiaswg5-utilities
+RUN rm -r /biaflows-utilities
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Install ilastik
@@ -30,6 +30,7 @@ RUN bsdtar -xjvf ilastik-1.3.2-Linux.tar.bz2 && \
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Install workflow
+ADD PixelClassification.ilp /app/PixelClassification.ilp
 RUN wget -O /app/RGBPixelClassification.ilp https://biaflows.neubias.org/workflow-files/ilastik_weights.ilp
 
 ADD wrapper.py /app/wrapper.py
